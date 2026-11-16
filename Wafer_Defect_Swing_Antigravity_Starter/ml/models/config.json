@@ -1,0 +1,17 @@
+{
+  "classes": [
+    "Center",
+    "Donut",
+    "Edge-Loc",
+    "Edge-Ring",
+    "Loc",
+    "Near-Full",
+    "Random",
+    "Scratch",
+    "None"
+  ],
+  "feature_dim": 25,
+  "model_type": "RandomForest-SpatialFeatures",
+  "model_file": "wafer_model.joblib",
+  "model_mode": "TRAINED"
+}

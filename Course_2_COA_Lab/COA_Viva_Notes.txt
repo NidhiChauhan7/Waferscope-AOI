@@ -1,0 +1,38 @@
+========================================================================
+   COURSE 2: COMPUTER ORGANIZATION & ARCHITECTURE LAB (2310221L)
+   VIVA QUESTIONS & CONCEPTS REFERENCE FOR PANEL MEMBERS
+   Instructors: Mr. Suhas Kothvale, Ms. Tejas Tambe, Mrs. Deepa Rengade
+========================================================================
+
+Q1: "How did you relate 80386 / 64-bit architecture to your project?"
+Answer:
+  "We mapped the wafer map memory traversal to 64-bit general-purpose registers:
+   - RAX: Accumulates good die counts.
+   - RBX: Accumulates defective die counts.
+   - RCX: Loop counter decremented per die cell.
+   - RSI: Source index pointing to the base address of the 2D wafer array.
+   - FLAGS (ZF, CF, SF): Control conditional branching (JE, JNE) after CMP."
+
+Q2: "Which computer arithmetic algorithm did you implement in CO3?"
+Answer:
+  "We implemented two algorithms to compute yield scaling (dies * 100):
+   1. Successive Addition: Computes product by repeated addition in O(B) iterations.
+   2. Shift-and-Add Binary Multiplication: Hardware-efficient ALU algorithm
+      using bit shifts (SHL/SHR) and additions, executing in O(log2 B) cycles."
+
+Q3: "How does the memory hierarchy affect wafer defect scanning?"
+Answer:
+  "Standard x86-64 / ARM CPUs feature a 64-byte L1 Data Cache line size.
+   A 17x17 wafer map has 289 dies.
+   When traversed in Row-Major order (sequential memory access):
+   - Loading the first die causes a cache miss and fetches 64 bytes into L1.
+   - The subsequent 63 dies result in cache hits!
+   - This achieves an L1 data cache hit rate exceeding 90%."
+
+Q4: "Explain instruction pipelining in your project."
+Answer:
+  "We model a 3-stage instruction pipeline:
+   1. FETCH   : Instruction fetched from memory pointed by RIP (Program Counter).
+   2. DECODE  : Control unit decodes opcode (e.g. CMP r8, 1).
+   3. EXECUTE : ALU executes comparison and updates Zero Flag (ZF)."
+
