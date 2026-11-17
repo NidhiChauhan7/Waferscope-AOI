@@ -1,0 +1,38 @@
+========================================================================
+   COURSE 3: COMPUTER GRAPHICS LAB (2310218L)
+   VIVA QUESTIONS & CONCEPTS REFERENCE FOR PANEL MEMBERS
+   Instructors: Mrs. Gauri Thite, Mrs. Mayura Kulkarni, Mr. Vaibhav Rewaskar
+========================================================================
+
+Q1: "Which drawing algorithm did you use for the circular wafer?"
+Answer:
+  "We implemented the Midpoint Circle Drawing Algorithm:
+   - Uses 8-way symmetry to minimize trigonometric calculations.
+   - Initial decision parameter: p = 1 - r.
+   - If p < 0: next pixel is (x+1, y) and p = p + 2x + 1.
+   - If p >= 0: next pixel is (x+1, y-1) and p = p + 2(x - y) + 1.
+   - Operates completely in integer arithmetic, eliminating floating-point latency."
+
+Q2: "Which 2D geometric transformations did you implement?"
+Answer:
+  "We implemented Translation, Scaling, and Rotation using homogeneous coordinates:
+   1. Translation: P' = P + T (Used for mouse dragging and panning across the wafer).
+   2. Scaling    : P' = P * S (Used for interactive zoom in / zoom out centered on cursor).
+   3. Rotation   : Rotates coordinate (x,y) by angle theta around the wafer center."
+
+Q3: "How does the Cohen-Sutherland algorithm work in your project?"
+Answer:
+  "We use Cohen-Sutherland to clip drawing vectors to the viewport window:
+   - Every coordinate is assigned a 4-bit region outcode [TOP, BOTTOM, RIGHT, LEFT].
+   - If (code1 | code2 == 0): Trivial Accept (line is completely inside).
+   - If (code1 & code2 != 0): Trivial Reject (both endpoints share an outside half-plane).
+   - Otherwise, the algorithm calculates intersection coordinates with the window boundary."
+
+Q4: "Explain the color model and shading used for wafer visualization."
+Answer:
+  "We use the RGB color model:
+   - Polished Silicon Substrate: RGB(226, 232, 240)
+   - Good Dies (Pass)          : Emerald RGB(34, 197, 94)
+   - Defective Dies (Fail)     : Crimson RGB(239, 68, 68)
+   - Thermal Defect Gradient   : Interpolates dynamically from Blue (low density)
+     through Cyan, Yellow, and Orange to Vivid Red (high defect concentration)."

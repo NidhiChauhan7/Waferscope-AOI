@@ -1,0 +1,44 @@
+========================================================================
+   COURSE 4: PSOOP LAB (C++ / JAVA - 2310261L / 2310262L)
+   VIVA QUESTIONS & CONCEPTS REFERENCE FOR PANEL MEMBERS
+   Instructors: Ms. Tejas Tambe, Ms. Prajakta Dashrath, Mrs. Jaya Mane
+========================================================================
+
+Q1: "Which 4 pillars of OOP are implemented?"
+Answer:
+  "1. Encapsulation : Member variables (waferId, imageName, type, confidence)
+                      are declared private and accessed via public getters.
+   2. Abstraction   : Analyzer (or BaseAnalyzer in C++) is an abstract class
+                      defining pure virtual/abstract method analyze().
+   3. Inheritance   : WaferAnalyzer inherits from Analyzer.
+                      AIWaferAnalyzer demonstrates multilevel inheritance.
+   4. Polymorphism  :
+      - Compile-Time: Method overloading analyze(Wafer) vs analyze(Wafer, Result).
+      - Runtime     : Parent reference (Analyzer) pointing to child object (WaferAnalyzer)
+                      executes overridden child method dynamically."
+
+Q2: "What is the difference between Method Overloading and Method Overriding?"
+Answer:
+  "- Overloading: Same method name with different parameter signatures in the same class.
+                  Resolved at compile time (static binding).
+   - Overriding : Child class provides its own specific implementation of a method
+                  already defined in the parent class with the exact same signature.
+                  Resolved at runtime (dynamic binding via vtable)."
+
+Q3: "Why did you use Composition instead of Inheritance for InspectionResult?"
+Answer:
+  "An InspectionResult is NOT a Defect (IS-A relationship would be incorrect).
+   An InspectionResult HAS-A Defect (HAS-A composition).
+   Composition provides loose coupling and permits the Defect object to be
+   inspected independently of the overall inspection result."
+
+Q4: "How did you use Lambda Expressions in Java?"
+Answer:
+  "In CO2, we used Java Lambda Expressions to sort and iterate over defect records:
+   defectList.sort((d1, d2) -> Double.compare(d2.getConfidence(), d1.getConfidence()));
+   defectList.forEach(d -> System.out.println(d.getType()));"
+
+Q5: "How are exceptions handled in both languages?"
+Answer:
+  "- Java: Checked & unchecked exceptions using try-catch-finally blocks.
+   - C++ : Exception handling using try, catch, and throw std::invalid_argument."

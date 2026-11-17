@@ -19,6 +19,19 @@ import java.util.List;
  */
 public class DatasetLoader {
 
+    private static List<WaferMap> lastLoadedWafers = new ArrayList<>();
+
+    public static List<WaferMap> getCurrentLoadedWafers() {
+        return lastLoadedWafers;
+    }
+
+    public static List<WaferMap> loadSingleMapFile(Path p) throws IOException {
+        WaferMap wm = loadSingleWaferFile(p.toFile());
+        List<WaferMap> list = new ArrayList<>();
+        list.add(wm);
+        return list;
+    }
+
     public static class LoadReport {
         private final List<WaferMap> wafers = new ArrayList<>();
         private final List<String> warnings = new ArrayList<>();
@@ -112,6 +125,7 @@ public class DatasetLoader {
             }
         }
 
+        lastLoadedWafers = report.wafers;
         return report;
     }
 

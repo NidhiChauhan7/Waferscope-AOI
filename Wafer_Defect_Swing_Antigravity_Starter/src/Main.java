@@ -1,15 +1,15 @@
+import java.awt.Color;
+import java.awt.Font;
 import javax.swing.*;
 import waferscope.ui.MainFrame;
+import waferscope.ui.UiKit;
 
 /**
- * Main application entrypoint for WaferScope.
- * AI-Based Semiconductor Wafer Defect Detection System.
+ * Main application entrypoint for WaferScope AOI.
+ * Semiconductor Wafer Defect Detection & Quality Intelligence Platform.
  *
- * Integrated Academic Prototype:
- * - Java / PSOOP : Full desktop Swing interface, OOP architecture, file handling, and results
- * - Computer Graphics: Antialiased circular silicon wafer, dies, hover inspector, defect heatmaps
- * - COA : High-resolution execution profiling, memory hierarchy, cache locality, and SIMD analysis
- * - Python / ML : WM-811K deep learning pipeline integration for defect classification
+ * Enforces crisp high-contrast theme, WCAG AA/AAA readability,
+ * and seamless customer-facing presentation.
  */
 public class Main {
     public static void main(String[] args) {
@@ -18,6 +18,28 @@ public class Main {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {
         }
+
+        // Enforce strict high-contrast text and UI properties globally
+        Color darkSlate = UiKit.TEXT_PRIMARY; // #0f172a (14:1 contrast on white)
+        UIManager.put("Label.foreground", darkSlate);
+        UIManager.put("Button.foreground", darkSlate);
+        UIManager.put("ToggleButton.foreground", darkSlate);
+        UIManager.put("TextArea.foreground", darkSlate);
+        UIManager.put("TextField.foreground", darkSlate);
+        UIManager.put("Table.foreground", darkSlate);
+        UIManager.put("TableHeader.foreground", darkSlate);
+        UIManager.put("TableHeader.font", new Font("SansSerif", Font.BOLD, 12));
+        UIManager.put("ComboBox.foreground", darkSlate);
+        UIManager.put("CheckBox.foreground", darkSlate);
+        UIManager.put("RadioButton.foreground", darkSlate);
+        UIManager.put("TitledBorder.titleColor", darkSlate);
+        UIManager.put("Panel.foreground", darkSlate);
+        UIManager.put("List.foreground", darkSlate);
+        UIManager.put("ToolTip.foreground", darkSlate);
+        UIManager.put("ToolTip.background", Color.WHITE);
+        UIManager.put("ProgressBar.foreground", UiKit.PRIMARY);
+        UIManager.put("ProgressBar.selectionForeground", Color.WHITE);
+        UIManager.put("ProgressBar.selectionBackground", darkSlate);
 
         // Launch UI on Swing Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(() -> {

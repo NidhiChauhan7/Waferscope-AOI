@@ -1,0 +1,87 @@
+========================================================================================
+       DATA STRUCTURES LABORATORY IN C++ - VIVA & ARCHITECTURE REFERENCE GUIDE
+         AI-Based Semiconductor Wafer Defect Detection System (Course 1 - 2310214L)
+========================================================================================
+
+PROJECT INTEGRATION:
+How Data Structures in C++ are applied to Industrial Semiconductor Wafer Automated Optical Inspection (AOI).
+Zero hardcoded values: Binds dynamically to active_wafer.txt and the live dataset.
+
+----------------------------------------------------------------------------------------
+TOPIC 1: ARRAYS (DYNAMIC HEAP BUFFER, INSERT, SEARCH, UPDATE, DELETE, DISPLAY)
+----------------------------------------------------------------------------------------
+Q1: How are arrays implemented and utilized in the C++ wafer inspection engine?
+A1: In wafer_datastructures.h and DataStructuresDemo.cpp:
+    - Memory Management: Implemented as a heap-allocated buffer (WaferItem* array = new WaferItem[capacity]).
+    - Dynamic Insertion (O(1)): Appends new incoming scanned wafers to array[count++].
+    - Linear Search (O(n)): Iterates through pointer offsets array[i].waferId to find a target wafer.
+    - Dynamic Update (O(1)): Re-indexes by waferId and updates defect count and defect percentage.
+    - Deletion with Shifting (O(n)): Removes anomalous wafers and shifts adjacent memory elements left:
+        for (int i = idx; i < count - 1; ++i) array[i] = array[i + 1];
+    - Memory Safety: The destructor (~WaferArrayOps) calls delete[] array to avoid memory leaks.
+
+----------------------------------------------------------------------------------------
+TOPIC 2: SINGLY LINKED LIST (DYNAMIC HEAP POINTER ALLOCATION)
+----------------------------------------------------------------------------------------
+Q2: Why use a Singly Linked List in C++ for the continuous wafer conveyor stream?
+A2: In semiconductor fabs, wafers arrive asynchronously off inspection tracks. Arrays suffer from fixed
+    capacity and costly reallocation overhead.
+    In WaferLinkedList:
+    - Dynamic Node Allocation: struct Node { string waferId; string defectLabel; double defectDensity; Node* next; }
+      Each wafer is dynamically allocated on the heap (new Node(...)) upon arrival.
+    - O(1) Head Insertion: Immediately links the newest wafer map to the head pointer:
+        newNode->next = head; head = newNode;
+    - O(n) Traversal & Display: Traverses node pointers via curr = curr->next until nullptr.
+    - Destructor: Traverses and calls delete on every node to release heap memory cleanly.
+
+----------------------------------------------------------------------------------------
+TOPIC 3: STACK AND QUEUE IMPLEMENTATIONS
+----------------------------------------------------------------------------------------
+Q3: How are Stack (LIFO) and Queue (FIFO) applied to the fab inspection chamber?
+A3: - FIFO Queue (LotQueue): Models the automated fab intake conveyor. Wafers enter the rear
+      and are dispatched to the inspection chamber in First-In, First-Out order.
+      Operations: enqueue(waferId) and dequeue() execute in O(1) time using circular pointer/index math.
+    - LIFO Stack (InspectionStack): Represents the quality-control rollback / audit mechanism.
+      If a sensor calibration fails or a lot needs re-testing, the most recently analyzed wafer is
+      popped from the top of the stack (Last-In, First-Out).
+      Operations: push(waferId) and pop() execute in O(1) time.
+
+----------------------------------------------------------------------------------------
+TOPIC 4: SEARCHING & SORTING ALGORITHMS (QUICKSORT & BINARY SEARCH)
+----------------------------------------------------------------------------------------
+Q4: What sorting algorithm is implemented in C++ and what is its time and space complexity?
+A4: In WaferSearchSort:
+    - Algorithm: QuickSort using divide-and-conquer in-place partitioning.
+    - Partitioning: Uses defect density as key pivot. Elements with defect density <= pivot are
+      swapped to the left sub-array using std::swap.
+    - Time Complexity:
+        * Best & Average Case: O(n log n)
+        * Worst Case: O(n^2) (mitigated by balanced pivot selection)
+    - Space Complexity: O(log n) auxiliary stack frames for recursion.
+    - Telemetry: Measures execution latency in microseconds (std::chrono::high_resolution_clock),
+      comparisons, and swaps.
+    - Binary Search (O(log n)): Operates on sorted wafer IDs via left + (right - left) / 2 bisecting.
+
+----------------------------------------------------------------------------------------
+TOPIC 5: HASHING TECHNIQUES WITH COLLISION RESOLUTION (CHAINING)
+----------------------------------------------------------------------------------------
+Q5: How does the C++ Hash Table provide O(1) lookup and handle collisions?
+A5: In WaferHashTable:
+    - Direct Address Buckets: HashNode** buckets = new HashNode*[numBuckets].
+    - Hash Function: Polynomial rolling hash (DJB2 algorithm: hash * 33 + char) modulo bucket count.
+    - Collision Resolution: Separate Chaining via singly linked list of HashNode* in each bucket.
+    - O(1) Average Lookup: Directly indexes bucketIndex = hash(key) % numBuckets, then traverses
+      the short chain to find the wafer record.
+
+----------------------------------------------------------------------------------------
+TOPIC 6: DYNAMIC INTEGRATION & C++ / JAVA HYBRID ARCHITECTURE
+----------------------------------------------------------------------------------------
+Q6: How does the C++ engine connect to the main Java Swing application?
+A6: Through CppDataStructuresBridge.java and IPC via active_wafer.txt:
+    1. Whenever an operator selects or uploads a wafer in the Swing GUI, active_wafer.txt is updated.
+    2. The C++ engine (DataStructuresDemo.cpp / wafer_datastructures.cpp) reads active_wafer.txt
+       and the CSV dataset dynamically.
+    3. CppDataStructuresBridge checks for the compiled C++ binary (wafer_datastructures.exe)
+       and executes QuickSort and Binary Search subprocess calls with microsecond telemetry.
+    4. If running without a local C++ compiler, the Java bridge mirrors the C++ algorithms in-process.
+========================================================================================

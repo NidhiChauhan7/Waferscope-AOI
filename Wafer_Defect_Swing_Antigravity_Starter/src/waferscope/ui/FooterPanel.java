@@ -18,27 +18,27 @@ public class FooterPanel extends JPanel {
 
     private final JLabel waferInfoLabel = new JLabel("No wafer selected");
     private final JLabel perfInfoLabel = new JLabel("Latency: - | Heap: - | Cores: " + Runtime.getRuntime().availableProcessors());
-    private final JLabel creditsLabel = new JLabel("MIT AOE Pune | Java - C++ - CG - COA");
+    private final JLabel creditsLabel = new JLabel("WaferScope AOI Platform");
 
     public FooterPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(241, 245, 249));
+        setBackground(Color.WHITE);
         setBorder(new CompoundBorder(
-            new LineBorder(new Color(226, 232, 240), 1),
-            new EmptyBorder(6, 16, 6, 16)
+            new LineBorder(UiKit.BORDER_COLOR, 1),
+            new EmptyBorder(8, 18, 8, 18)
         ));
 
         waferInfoLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        waferInfoLabel.setForeground(new Color(30, 41, 59));
+        waferInfoLabel.setForeground(UiKit.TEXT_PRIMARY);
         add(waferInfoLabel, BorderLayout.WEST);
 
-        perfInfoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        perfInfoLabel.setForeground(new Color(71, 85, 105));
+        perfInfoLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        perfInfoLabel.setForeground(UiKit.TEXT_SECONDARY);
         add(perfInfoLabel, BorderLayout.CENTER);
         perfInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        creditsLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
-        creditsLabel.setForeground(new Color(100, 116, 139));
+        creditsLabel.setFont(new Font("SansSerif", Font.ITALIC, 12));
+        creditsLabel.setForeground(UiKit.TEXT_MUTED);
         add(creditsLabel, BorderLayout.EAST);
 
         refreshMemoryStatus(0.0);

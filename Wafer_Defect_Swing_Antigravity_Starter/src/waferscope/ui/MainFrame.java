@@ -3,6 +3,7 @@ package waferscope.ui;
 import waferscope.classifier.DefectClassifier;
 import waferscope.classifier.DemoNearestNeighborClassifier;
 import waferscope.classifier.PythonInferenceEngine;
+import waferscope.datastructures.ActiveWaferBridge;
 import waferscope.io.DatasetLoader;
 import waferscope.model.PredictionResult;
 import waferscope.model.WaferMap;
@@ -17,8 +18,15 @@ import java.util.List;
 
 /**
  * Main application window for WaferScope AOI.
- * Integrates Header, Footer, Navigation, Dashboard, Wafer Visualizer,
- * Interactive AI Inference Studio, Historical Logs, and COA Profiling.
+ * 
+ * Customer-Facing Architecture:
+ * - Header: Platform Branding, Live Lot Badges & Primary Navigation
+ * - Dashboard: Executive KPIs, Yield Analytics & Batch Lot Audits
+ * - Analyze Wafer: Customer Image Upload, Die Digitizer & Instant AI Diagnosis
+ * - Defect Knowledge Hub: Customer Defect Encyclopedia for all 9 Patterns
+ * - Wafer Visualizer: High-Res Silicon Wafer Map & C++ Graphics Engine Canvas
+ * - Inspection History: Tabular Session Audit Trail & CSV Report Exporter
+ * - Footer: Hardware Telemetry, Memory Footprint & Monotonic Latency
  */
 public class MainFrame extends JFrame {
 
@@ -29,7 +37,7 @@ public class MainFrame extends JFrame {
     private final PythonInferenceEngine pythonClassifier = new PythonInferenceEngine();
     private boolean preferPythonAi = true;
 
-    // Segregated View Panels
+    // View Panels
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel viewsCardPanel = new JPanel(cardLayout);
 
@@ -37,15 +45,13 @@ public class MainFrame extends JFrame {
     private final FooterPanel footerPanel = new FooterPanel();
 
     private final DashboardPanel dashboardPanel = new DashboardPanel();
+    private final CustomerAnalyzerPanel analyzerPanel = new CustomerAnalyzerPanel();
+    private final DefectKnowledgePanel knowledgePanel = new DefectKnowledgePanel();
     private final WaferViewPanel waferViewPanel = new WaferViewPanel();
-    private final InteractiveInferencePanel inferencePanel = new InteractiveInferencePanel();
     private final HistoryPanel historyPanel = new HistoryPanel();
-    private final CoaMetricsPanel coaPanel = new CoaMetricsPanel();
-    private final DatasetGuidePanel guidePanel = new DatasetGuidePanel();
-    private final OopVivaPanel oopVivaPanel = new OopVivaPanel();
 
     public MainFrame() {
-        super("WaferScope AOI | AI-Based Semiconductor Wafer Defect Detection System");
+        super("WaferScope AOI | Intelligent Semiconductor Wafer Defect Detection Platform");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 860);
         setMinimumSize(new Dimension(1040, 720));
@@ -64,18 +70,16 @@ public class MainFrame extends JFrame {
     private void initUI() {
         setLayout(new BorderLayout());
 
-        // 1. Header (Branding, Status Pills & Navigation Tabs)
+        // 1. Header
         add(headerPanel, BorderLayout.NORTH);
 
-        // 2. Segregated Content Card Views
+        // 2. Customer View Cards
         viewsCardPanel.setOpaque(false);
         viewsCardPanel.add(dashboardPanel, "DASHBOARD");
-        viewsCardPanel.add(waferViewPanel, "VISUALIZER");
-        viewsCardPanel.add(inferencePanel, "INFERENCE");
-        viewsCardPanel.add(historyPanel, "HISTORY");
-        viewsCardPanel.add(coaPanel, "COA METRICS");
-        viewsCardPanel.add(guidePanel, "DATASET GUIDE");
-        viewsCardPanel.add(oopVivaPanel, "OOP VIVA GUIDE");
+        viewsCardPanel.add(analyzerPanel, "ANALYZE WAFER");
+        viewsCardPanel.add(knowledgePanel, "DEFECT KNOWLEDGE HUB");
+        viewsCardPanel.add(waferViewPanel, "WAFER VISUALIZER");
+        viewsCardPanel.add(historyPanel, "INSPECTION HISTORY");
 
         add(viewsCardPanel, BorderLayout.CENTER);
 
@@ -93,23 +97,85 @@ public class MainFrame extends JFrame {
         // Wafer View selection change
         waferViewPanel.setOnWaferChangeListener(wafer -> {
             currentWafer = wafer;
+            ActiveWaferBridge.updateActiveWafer(wafer, null);
+            dashboardPanel.setActiveWafer(wafer);
             footerPanel.updateWafer(wafer);
-            inferencePanel.setWafer(wafer);
+            analyzerPanel.setWafer(wafer);
         });
 
-        // Dashboard category select
+        // Dashboard wafer selection change (from QuickSort table / Binary Search)
+        dashboardPanel.setOnWaferSelectListener(wafer -> {
+            currentWafer = wafer;
+            ActiveWaferBridge.updateActiveWafer(wafer, null);
+            waferViewPanel.selectWafer(wafer);
+            footerPanel.updateWafer(wafer);
+            analyzerPanel.setWafer(wafer);
+        });
+
+        // Dashboard category select -> Filter and show
         dashboardPanel.setOnCategorySelectListener(category -> {
             waferViewPanel.filterByCategory(category);
-            cardLayout.show(viewsCardPanel, "VISUALIZER");
+            cardLayout.show(viewsCardPanel, "WAFER VISUALIZER");
+            headerPanel.selectTab("WAFER VISUALIZER");
         });
 
         // Dashboard batch scan
         dashboardPanel.setOnBatchScanListener(this::runFullLotBatchScan);
 
+        // Knowledge Hub sample selected -> Load into Analyzer and switch to it!
+        knowledgePanel.setOnSampleSelectedListener(categoryName -> {
+            WaferMap match = null;
+            for (WaferMap w : loadedWafers) {
+                if (categoryName.equalsIgnoreCase(w.getGroundTruthLabel())) {
+                    match = w;
+                    break;
+                }
+            }
+            if (match != null) {
+                currentWafer = match;
+                ActiveWaferBridge.updateActiveWafer(match, null);
+                dashboardPanel.setActiveWafer(match);
+                analyzerPanel.setWafer(match);
+                cardLayout.show(viewsCardPanel, "ANALYZE WAFER");
+                headerPanel.selectTab("ANALYZE WAFER");
+            } else {
+                JOptionPane.showMessageDialog(this, "No wafer sample found for category: " + categoryName,
+                    "Sample Search", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        // Analyzer completed callback -> Update footer, history, and active wafer bridge
+        analyzerPanel.setOnAnalysisCompleteCallback(result -> {
+            if (result != null) {
+                historyPanel.addRecord(result);
+                footerPanel.updateResult(result);
+                ActiveWaferBridge.updateActiveWafer(currentWafer, result);
+                dashboardPanel.setActiveWafer(currentWafer);
+            }
+        });
+
+        // Analyzer wafer selection change (e.g. from Detailed Analysis live lot table or search)
+        analyzerPanel.setOnWaferSelectListener(wafer -> {
+            currentWafer = wafer;
+            ActiveWaferBridge.updateActiveWafer(wafer, null);
+            dashboardPanel.setActiveWafer(wafer);
+            footerPanel.updateWafer(wafer);
+            waferViewPanel.selectWafer(wafer);
+        });
+
         // History wafer re-select
         historyPanel.setOnWaferSelectListener(waferId -> {
-            waferViewPanel.selectWaferById(waferId);
-            cardLayout.show(viewsCardPanel, "VISUALIZER");
+            for (WaferMap w : loadedWafers) {
+                if (w.getId().equalsIgnoreCase(waferId)) {
+                    currentWafer = w;
+                    ActiveWaferBridge.updateActiveWafer(w, null);
+                    dashboardPanel.setActiveWafer(w);
+                    analyzerPanel.setWafer(w);
+                    cardLayout.show(viewsCardPanel, "ANALYZE WAFER");
+                    headerPanel.selectTab("ANALYZE WAFER");
+                    break;
+                }
+            }
         });
     }
 
@@ -119,13 +185,22 @@ public class MainFrame extends JFrame {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    inferencePanel.runInference();
+                    analyzerPanel.runAnalysis();
                 } else if (e.getKeyCode() == KeyEvent.VK_D) {
                     cardLayout.show(viewsCardPanel, "DASHBOARD");
+                    headerPanel.selectTab("DASHBOARD");
+                } else if (e.getKeyCode() == KeyEvent.VK_A) {
+                    cardLayout.show(viewsCardPanel, "ANALYZE WAFER");
+                    headerPanel.selectTab("ANALYZE WAFER");
+                } else if (e.getKeyCode() == KeyEvent.VK_K) {
+                    cardLayout.show(viewsCardPanel, "DEFECT KNOWLEDGE HUB");
+                    headerPanel.selectTab("DEFECT KNOWLEDGE HUB");
                 } else if (e.getKeyCode() == KeyEvent.VK_V) {
-                    cardLayout.show(viewsCardPanel, "VISUALIZER");
-                } else if (e.getKeyCode() == KeyEvent.VK_I) {
-                    cardLayout.show(viewsCardPanel, "INFERENCE");
+                    cardLayout.show(viewsCardPanel, "WAFER VISUALIZER");
+                    headerPanel.selectTab("WAFER VISUALIZER");
+                } else if (e.getKeyCode() == KeyEvent.VK_H) {
+                    cardLayout.show(viewsCardPanel, "INSPECTION HISTORY");
+                    headerPanel.selectTab("INSPECTION HISTORY");
                 }
             }
         });
@@ -151,17 +226,24 @@ public class MainFrame extends JFrame {
                     demoClassifier.setReferences(loadedWafers);
 
                     // Update UI views
-                    headerPanel.updateSampleCount(loadedWafers.size());
+                    String lotId = !loadedWafers.isEmpty() && loadedWafers.get(0).getId().contains("-")
+                        ? loadedWafers.get(0).getId().split("-")[1]
+                        : "FAB-LOT";
+                    headerPanel.setLotInfo(lotId, loadedWafers.size());
                     dashboardPanel.updateData(loadedWafers);
                     waferViewPanel.setWafers(loadedWafers);
+                    analyzerPanel.setWafersList(loadedWafers);
+                    historyPanel.populateLotBaseline(loadedWafers, demoClassifier);
 
                     updateClassifierSelection();
 
                     if (!loadedWafers.isEmpty()) {
                         currentWafer = loadedWafers.get(0);
+                        ActiveWaferBridge.updateActiveWafer(currentWafer, null);
+                        dashboardPanel.setActiveWafer(currentWafer);
                         footerPanel.updateWafer(currentWafer);
-                        inferencePanel.setWafer(currentWafer);
-                        headerPanel.setSystemStatus("SYSTEM READY", new Color(34, 197, 94));
+                        analyzerPanel.setWafer(currentWafer);
+                        headerPanel.setSystemStatus("SYSTEM OPERATIONAL", new Color(34, 197, 94));
                     }
                 } catch (Exception ex) {
                     headerPanel.setSystemStatus("LOAD ERROR", new Color(239, 68, 68));
@@ -186,7 +268,7 @@ public class MainFrame extends JFrame {
             headerPanel.updateMode(active.getModelMode(), false);
         }
 
-        inferencePanel.setClassifier(active);
+        analyzerPanel.setClassifier(active);
     }
 
     private void runFullLotBatchScan() {
@@ -196,16 +278,18 @@ public class MainFrame extends JFrame {
             ? pythonClassifier : demoClassifier;
 
         JDialog progressDialog = new JDialog(this, "Batch Anomaly Scanning", true);
-        progressDialog.setSize(380, 140);
+        progressDialog.setSize(400, 150);
         progressDialog.setLocationRelativeTo(this);
         progressDialog.setLayout(new BorderLayout(10, 10));
 
         JLabel pLabel = new JLabel("Scanning wafer lot: 0 / " + loadedWafers.size(), JLabel.CENTER);
-        pLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        pLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        pLabel.setForeground(new Color(15, 23, 42));
         JProgressBar pb = new JProgressBar(0, loadedWafers.size());
         pb.setStringPainted(true);
 
-        JPanel pContent = new JPanel(new GridLayout(2, 1, 6, 6));
+        JPanel pContent = new JPanel(new GridLayout(2, 1, 8, 8));
+        pContent.setBackground(Color.WHITE);
         pContent.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
         pContent.add(pLabel);
         pContent.add(pb);
@@ -242,12 +326,12 @@ public class MainFrame extends JFrame {
                     if (!results.isEmpty()) {
                         PredictionResult last = results.get(results.size() - 1);
                         footerPanel.updateResult(last);
-                        coaPanel.updateMetrics(last);
                     }
                     JOptionPane.showMessageDialog(MainFrame.this,
-                        "Batch scan complete!\n" + results.size() + " wafers analyzed across all 9 defect categories.\nCheck the 'History' tab for detailed log.",
+                        "Batch scan complete!\n" + results.size() + " wafers analyzed across all 9 defect categories.\nCheck the 'Inspection History' tab for detailed records.",
                         "Batch Scan Complete", JOptionPane.INFORMATION_MESSAGE);
-                    cardLayout.show(viewsCardPanel, "HISTORY");
+                    cardLayout.show(viewsCardPanel, "INSPECTION HISTORY");
+                    headerPanel.selectTab("INSPECTION HISTORY");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(MainFrame.this, "Batch scan failed: " + ex.getMessage(), "Scan Error", JOptionPane.ERROR_MESSAGE);
                 }

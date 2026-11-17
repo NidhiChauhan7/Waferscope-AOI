@@ -1,0 +1,76 @@
+========================================================================================
+       DATA STRUCTURES LABORATORY - VIVA & CONCEPTUAL REFERENCE GUIDE
+        AI-Based Semiconductor Wafer Defect Detection System (Data Structures)
+========================================================================================
+
+PROJECT INTEGRATION:
+How Data Structures are applied to Industrial Semiconductor Wafer Automated Optical Inspection (AOI).
+
+----------------------------------------------------------------------------------------
+TOPIC 1: ARRAYS (INSERT, DELETE, UPDATE, SEARCH, DISPLAY)
+----------------------------------------------------------------------------------------
+Q1: How are arrays used in wafer defect inspection?
+A1: Each wafer map is fundamentally represented as a 2D integer/ternary grid of size 17x17
+    (289 total dies). In WaferArrayOps.java:
+    - Insert: Appends incoming wafer records to the lot array in O(1) amortized time.
+    - Delete: Removes anomalous or damaged wafers by shifting subsequent elements left in O(n) time.
+    - Update: Modifies inspection tags or recalibrated defect densities in O(1) time.
+    - Linear Search: Scans sequentially by waferId in O(n) time.
+    - Display: Traverses the array in O(n) to output lot summaries.
+
+----------------------------------------------------------------------------------------
+TOPIC 2: SINGLY LINKED LIST (DYNAMIC MEMORY ALLOCATION)
+----------------------------------------------------------------------------------------
+Q2: Why use a Singly Linked List instead of an Array for continuous wafer streams?
+A2: In semiconductor automated optical inspection (AOI), the stream of incoming wafers is
+    continuous and dynamic. Arrays suffer from fixed size and costly re-allocation.
+    In WaferLinkedList.java:
+    - Dynamic memory allocation: Each Node dynamically allocates memory for wafer ID, defect type, and next pointer.
+    - O(1) Head Insertion: New wafers scanned off the conveyor belt are prepended instantly.
+    - O(n) Traversal & Search: Traverses nodes via pointer dereferencing until null.
+    - Memory efficiency: Only allocates memory when new wafers arrive, eliminating array wasted capacity.
+
+----------------------------------------------------------------------------------------
+TOPIC 3: STACK AND QUEUE IMPLEMENTATION
+----------------------------------------------------------------------------------------
+Q3: How are Stack (LIFO) and Queue (FIFO) applied to the fab inspection workflow?
+A3: - FIFO Queue (LotQueue): Models the automated fab intake conveyor. Wafers enter the back
+      of the queue and are analyzed in First-In, First-Out order.
+      Operations: enqueue(wafer), dequeue() -> O(1) time.
+    - LIFO Stack (InspectionStack): Represents the quality-control rollback / undo mechanism.
+      If an inspection error occurs or a lot step requires re-test, the most recently analyzed
+      wafer is popped off the top of the stack (Last-In, First-Out).
+      Operations: push(wafer), pop() -> O(1) time.
+
+----------------------------------------------------------------------------------------
+TOPIC 4: SEARCHING & SORTING ALGORITHMS
+----------------------------------------------------------------------------------------
+Q4: What sorting algorithm did you use and why? What is its time complexity?
+A4: We implemented QuickSort in WaferSearchSort.java to rank wafers by defect density:
+    - Divide-and-conquer strategy: Selects a pivot element, partitions elements with defect
+      density <= pivot to the left and > pivot to the right, then recurses.
+    - Average Time Complexity: O(n log n).
+    - Space Complexity: O(log n) stack frames.
+    - Searching: Once sorted by wafer ID or yield, we use Binary Search in O(log n) time
+      by repeatedly dividing the search interval in half.
+
+----------------------------------------------------------------------------------------
+TOPIC 5: HASHING TECHNIQUES & COLLISION RESOLUTION
+----------------------------------------------------------------------------------------
+Q5: How does the Hash Table provide O(1) lookup for wafer traceability?
+A5: In WaferHashTable.java:
+    - Hash Function: Computes a numerical key using polynomial rolling hash modulo table size:
+      index = Math.abs(waferId.hashCode()) % TABLE_SIZE.
+    - Collision Resolution: Separate Chaining using linked list buckets at each hash index.
+      When two wafer IDs hash to the same bucket, the new node is appended to the bucket chain.
+    - Average Time Complexity: O(1) for insert, delete, and lookup.
+    - Worst Case: O(n) if all keys hash to the same bucket (mitigated by good hash distribution).
+
+----------------------------------------------------------------------------------------
+VIVA CHECKLIST:
+[x] Topic 1: Array insertion, deletion, updating, linear search verified.
+[x] Topic 2: Singly linked list dynamic node creation and traversal verified.
+[x] Topic 3: Stack (push/pop) and Queue (enqueue/dequeue) boundary conditions tested.
+[x] Topic 4: QuickSort partition and Binary Search logarithmic efficiency verified.
+[x] Topic 5: Hash Table modulo calculation and bucket chaining collision verified.
+========================================================================================

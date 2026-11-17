@@ -1,0 +1,83 @@
+========================================================================================
+    COMPUTER GRAPHICS LABORATORY IN C++ - VIVA & ARCHITECTURE REFERENCE GUIDE
+            Department of Computer Engineering (Course 3 - 2310218L)
+                  Curriculum: MIT Academy of Engineering (MITAOE)
+========================================================================================
+
+PROJECT INTEGRATION:
+How Computer Graphics in C++ is applied to Industrial Semiconductor Wafer Inspection (AOI).
+
+----------------------------------------------------------------------------------------
+PRACTICAL 01: OPENGL GRAPHICS PRIMITIVES & COLOR SHADING
+----------------------------------------------------------------------------------------
+Q1: What OpenGL primitives are used to render the silicon wafer and its dies?
+A1: In wafer_opengl_main.cpp and wafer_graphics_engine.h:
+    - GL_POLYGON / GL_LINE_LOOP: Approximates the circular silicon wafer substrate.
+    - GL_TRIANGLES: Renders the SEMI orientation alignment notch (flat/notch at wafer edge).
+    - GL_QUADS: Renders square rectangular dies (17x17 matrix) across the wafer surface.
+    - glColor3f: Assigns colors: Pass dies (Green RGB: 0.13, 0.77, 0.37), Defective dies (Red RGB: 0.94, 0.27, 0.27).
+
+----------------------------------------------------------------------------------------
+PRACTICAL 02: BRESENHAM'S LINE & CIRCLE DRAWING ALGORITHM
+----------------------------------------------------------------------------------------
+Q2: What is the mathematical foundation of Bresenham's algorithms?
+A2: In RasterAlgorithms:
+    - Bresenham Line: Uses pure integer decision parameter err = dx - dy. It eliminates floating-point
+      multiplications in the inner rasterization loop. Increments x or y based on whether err > -dy or err < dx.
+    - Midpoint Circle: Utilizes 8-way symmetry. Initial decision parameter p = 1 - r.
+      At each step:
+        * If p < 0: Next point is (x+1, y), and p = p + 2*x + 3.
+        * If p >= 0: Next point is (x+1, y-1), and p = p + 2*(x - y) + 5.
+      Computes only 1/8th of the circle and reflects across all 8 octants.
+
+----------------------------------------------------------------------------------------
+PRACTICAL 03: SCAN-LINE POLYGON FILL & BOUNDARY FILL ALGORITHMS
+----------------------------------------------------------------------------------------
+Q3: How does the scan-line polygon fill algorithm work for wafer defect clusters?
+A3: In PolygonFillAlgorithms:
+    - Constructs an Edge Table (ET) sorted by minimum y coordinate.
+    - An Active Edge Table (AET) maintains edges intersecting the current scanline.
+    - Intersections with current scanline y are calculated and sorted by x coordinate.
+    - Pixels are filled between pairs of intersections (parity rule).
+    - Used to highlight contiguous defect clusters (such as Center, Donut, and Scratch).
+
+----------------------------------------------------------------------------------------
+PRACTICAL 04: 2D & 3D GEOMETRIC TRANSFORMATIONS (ROTATION, ZOOM, TRANSLATION)
+----------------------------------------------------------------------------------------
+Q4: How are Zoom In, Zoom Out, and Rotation implemented mathematically around the wafer center?
+A4: In GeometricTransformations:
+    - Rotation about arbitrary center (cx, cy):
+        dx = x - cx; dy = y - cy;
+        x' = dx * cos(theta) - dy * sin(theta) + cx;
+        y' = dx * sin(theta) + dy * cos(theta) + cy;
+    - Scaling / Zoom relative to center (cx, cy):
+        x' = cx + (x - cx) * zoomFactor;
+        y' = cy + (y - cy) * zoomFactor;
+    - Matrix multiplication combines Scaling, Rotation, and Viewport Panning in one step.
+
+----------------------------------------------------------------------------------------
+PRACTICAL 05: COHEN-SUTHERLAND LINE CLIPPING ALGORITHM
+----------------------------------------------------------------------------------------
+Q5: How does Cohen-Sutherland clipping work with 4-bit region outcodes?
+A5: In LineClipping:
+    - 4-bit Outcode: [TOP, BOTTOM, RIGHT, LEFT]
+        * INSIDE = 0000, LEFT = 0001, RIGHT = 0010, BOTTOM = 0100, TOP = 1000
+    - Trivial Accept: (code0 | code1) == 0 (both endpoints inside viewport)
+    - Trivial Reject: (code0 & code1) != 0 (both endpoints on the same outside side)
+    - Boundary intersection: Computes x = x0 + (x1 - x0) * (y_bound - y0) / (y1 - y0)
+      and replaces the outside point iteratively until trivial accept or reject occurs.
+    - Application: Used in semiconductor inspection cameras to clip microscopic field-of-view apertures.
+
+----------------------------------------------------------------------------------------
+PRACTICAL 06 & CO.6: TEXTURE MAPPING & PHONG ILLUMINATION LIGHTING MODEL
+----------------------------------------------------------------------------------------
+Q6: How does texture mapping and lighting assist defect detection?
+A6: In TextureMapping & LightingModel:
+    - Texture Mapping: Maps procedural checkerboard or silicon crystal lattice textures
+      to verify optical alignment and calibration grids.
+    - Phong Illumination: Computes total intensity:
+        I = I_ambient * k_a + I_diffuse * k_d * (N . L) + I_specular * k_s * (R . V)^n
+      * Diffuse (Lambertian): Evaluates surface angle relative to illumination source.
+      * Specular: Simulates the high-gloss specular sheen of polished silicon and grazing angle
+        light scattering, causing subtle scratch defects and particles to brighten prominently.
+========================================================================================

@@ -1,0 +1,10 @@
+waferId=TSMC-L46393-W001-CTR
+defectLabel=Center
+defectCount=19
+validCount=193
+defectDensity=9.8
+yieldPercentage=90.2
+confidence=100.0
+status=ANOMALOUS
+imageName=TSMC-L46393-W001-CTR.png
+timestamp=2026-11-17T05:42:23.934696200
